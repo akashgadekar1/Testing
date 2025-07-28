@@ -1,28 +1,98 @@
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-
-function App() {
-
-
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Akash</h1>
-   
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+interface Product {
+  _id: string;
+  name: string;
+  price: number;
+  company: string;
+  rating: number;
+  featured: boolean;
+  createdAt: string;
 }
 
-export default App
+const App = () => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchProducts = async () => {
+    try {
+      const res = await axios.get(
+        "https://backend-product-tu2m.onrender.com/api/products"
+      );
+      if (res.data && res.data.Products) {
+        setProducts(res.data.Products);
+      }
+      setLoading(false);
+    } catch (err) {
+      console.error("Error fetching products:", err);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  if (loading) return <h2 className="text-center text-xl p-4">Loading...</h2>;
+
+  if (products.length === 0)
+    return <h2 className="text-center text-xl p-4">No products found</h2>;
+
+  return (
+ 
+ <div className="min-h-screen bg-gradient-to-tr from-blue-100 via-purple-100 to-pink-100 py-8 px-4 flex justify-center">
+  <div className="max-w-7xl w-full">
+    <h1 className="text-4xl font-bold text-center mb-10 text-gray-800">📦 Product List</h1>
+
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+      {products.map((product) => {
+        const createdAt = new Date(product.createdAt).toLocaleString("en-IN", {
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+
+        return (
+          <div
+            key={product._id}
+            className="w-full bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700"
+          >
+            
+            <div className="px-5 pb-5">
+              <a href="#">
+                <h5 className="text-xl font-semibold tracking-tight text-gray-900 dark:text-white">
+                  {product.name}
+                </h5>
+              </a>
+              <div className="flex items-center mt-2.5 mb-5">
+              
+                <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-sm dark:bg-blue-200 dark:text-blue-800 ms-3">
+                  {product.rating}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-3xl font-bold text-gray-900 dark:text-white">₹ {product.price}</span>
+                <button className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                  Add to cart
+                </button>
+              </div>
+              <p className="text-sm text-gray-600 mt-2">Company: {product.company}</p>
+              <p className="text-sm text-gray-600">Featured: {product.featured ? "✅ Yes" : "❌ No"}</p>
+              <p className="text-xs text-gray-500 mt-3">🕒 Created: {createdAt}</p>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+</div>
+
+
+
+  );
+};
+
+export default App;
